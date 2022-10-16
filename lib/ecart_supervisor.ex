@@ -26,7 +26,7 @@ defmodule EcartSystem.EcartSupervisor do
   def start_transaction do
     case DynamicSupervisor.start_child(@supervisor, {EcartManager, []}) do
       {:ok, _pid} ->
-        {:ok, "Trasaction started"}
+        {:ok, "Transaction started"}
 
       {:error, {:already_started, _pid}} ->
         {:error, "Already exist. Please complete the transaction first."}

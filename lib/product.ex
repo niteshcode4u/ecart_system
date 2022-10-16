@@ -47,11 +47,9 @@ defmodule EcartSystem.Product do
 
   @spec reset_data :: true
   @doc """
-    Delete all cached value and return true.
+    Delete all cached value and set it to default value into ETS products table.
   """
   def reset_data do
-    # [{"product", product_data}] = :ets.lookup(@product_table, @product)
-
     :ets.insert(@product_table, {@product, @default_products})
   end
 end

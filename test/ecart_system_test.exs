@@ -7,7 +7,7 @@ defmodule EcartSystemTest do
 
   describe "EcartSystem.start_transaction/0" do
     test "Successfully starts the transaction" do
-      assert EcartSystem.start_transaction() == {:ok, "Trasaction started"}
+      assert EcartSystem.start_transaction() == {:ok, "Transaction started"}
     end
 
     test "Error when already transaction is running" do

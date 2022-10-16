@@ -3,8 +3,6 @@ defmodule EcartSystem.Managers.EcartManager do
   To handle the state of shopping cart
   """
 
-  # Structure for state is %{voucher: 0, mug: 0, tshirt: 0}
-
   use GenServer, restart: :transient
 
   import EcartSystem.Product, only: [fetch_prices: 0]
@@ -34,7 +32,6 @@ defmodule EcartSystem.Managers.EcartManager do
   # Call Handlers #############################################################
 
   @impl GenServer
-  @spec init(any) :: {:ok, %{}}
   def init(_opts) do
     {:ok, %{}}
   end
@@ -73,8 +70,6 @@ defmodule EcartSystem.Managers.EcartManager do
   # Private functions #############################################################
 
   defp calculate_total_amount(products) do
-    # price = EcartSystem.Product.fetch_prices()
-
     Enum.reduce(products, 0, fn {product, quantity}, total ->
       product_cost = pricing_rule(product, quantity, fetch_prices())
       product_cost + total
