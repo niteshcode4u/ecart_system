@@ -3,7 +3,7 @@ defmodule EcartSystem.Product do
   A simple ETS based cache for expensive function calls.
   """
 
-  @product_table :"products_#{Mix.env}"
+  @product_table :"products_#{Mix.env()}"
   @product "product"
   @default_products %{voucher: 5.00, tshirt: 20.00, mug: 7.50}
 
@@ -33,7 +33,6 @@ defmodule EcartSystem.Product do
 
     product
   end
-
 
   @spec delete(atom()) :: boolean
   @doc """

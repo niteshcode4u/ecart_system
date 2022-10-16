@@ -12,7 +12,9 @@ defmodule EcartSystemTest do
 
     test "Error when already transaction is running" do
       EcartSystem.start_transaction()
-      assert EcartSystem.start_transaction() == {:error, "Already exist. Please complete the transaction first."}
+
+      assert EcartSystem.start_transaction() ==
+               {:error, "Already exist. Please complete the transaction first."}
     end
   end
 
@@ -37,20 +39,16 @@ defmodule EcartSystemTest do
       assert EcartSystem.scan_product("TSHIRT") == :ok
       assert EcartSystem.scan_product("PEN") == :ok
 
-
       assert EcartManager.get_ecart_session() == {:ok, %{voucher: 2, mug: 1, tshirt: 1}}
-
     end
 
     test "Dynamic product insertion shouldn't effect scanning of product" do
       EcartSystem.start_transaction()
       EcartSystem.Product.insert_or_update(:pen, 15.00)
 
-
       assert EcartSystem.scan_product("VOUCHER") == :ok
       assert EcartSystem.scan_product("VOUCHER") == :ok
       assert EcartSystem.scan_product("PEN") == :ok
-
 
       assert EcartManager.get_ecart_session() == {:ok, %{voucher: 2, pen: 1}}
     end
@@ -59,12 +57,10 @@ defmodule EcartSystemTest do
       EcartSystem.start_transaction()
       EcartSystem.Product.delete(:voucher)
 
-
       assert EcartSystem.scan_product("VOUCHER") == :ok
       assert EcartSystem.scan_product("MUG") == :ok
       assert EcartSystem.scan_product("MUG") == :ok
       assert EcartSystem.scan_product("TSHIRT") == :ok
-
 
       assert EcartManager.get_ecart_session() == {:ok, %{mug: 2, tshirt: 1}}
     end
@@ -94,8 +90,8 @@ defmodule EcartSystemTest do
     test "Gives total amount of scanned products" do
       EcartSystem.start_transaction()
 
-       assert EcartSystem.scan_product("VOUCHER") == :ok
-       assert EcartSystem.scan_product("TSHIRT") == :ok
+      assert EcartSystem.scan_product("VOUCHER") == :ok
+      assert EcartSystem.scan_product("TSHIRT") == :ok
       assert EcartSystem.scan_product("MUG") == :ok
 
       assert EcartSystem.calculate_total() == "32.5€"
