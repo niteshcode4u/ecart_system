@@ -21,39 +21,37 @@ end
   2. Then compile the project: ```mix compile```
   3. Then you can start the interactive Elixir shell: ```iex -S mix```
   4. After performing above please follow below steps into iex console
+  
+  Case I: Scan product one-by-one
 
-  Step I: Need to start the transaction
-
+  Step I:
   ```elixir
-    iex> EcartSupervisor.start_transaction()
-    {:ok, "Transaction started"}
+    iex> EcartSystem.scan_product("VOUCHER")
+    true
+
+    iex> EcartSystem.scan_product("TSHIRT")
+    true
+
+    iex> EcartSystem.scan_product("MUG")
+    true
   ```
 
-  Step II: Scan product one-by-one
-
+  Step II:
   ```elixir
-    iex> EcartManager.scan_product("VOUCHER")
-    :ok
-
-    iex> EcartManager.scan_product("MUG")
-    :ok
-
-    iex> EcartManager.scan_product("TSHIRT")
-    :ok
+    iex> EcartSystem.add_total()
+    "34€"
   ```
 
-  Step III: Calculate price for scanned products
+  Case II: Scan all products at once
   
   ```elixir
-    iex> EcartManager.calculate_total()
-    "32.5€"
-  ```
+    iex> products = ["VOUCHER", "TSHIRT", "VOUCHER", "VOUCHER", "MUG", "TSHIRT", "TSHIRT"]
+    iex> EcartSystem.scan_products(products)
+    "74.5€"
 
-  Step IV: Complete the transaction to intiate a new Ecart
-
-  ```elixir
-    iex> EcartSupervisor.complete_transaction()
-    {:ok, "Transaction completed"}
+    iex> products = ["TSHIRT", "TSHIRT", "TSHIRT", "VOUCHER", "TSHIRT"]
+    iex> EcartSystem.scan_products("TSHIRT")
+    "81.00€"
   ```
 
 ## How to Add/ Update/ Delete products into table:
