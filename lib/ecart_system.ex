@@ -3,67 +3,92 @@ defmodule EcartSystem do
   Documentation for `EcartSystem`.
   """
 
-  alias EcartSystem.EcartSupervisor
-  alias EcartSystem.Managers.EcartManager
+  import EcartSystem.Product, only: [fetch_prices: 0]
+  import EcartSystem.Cart
 
-  @spec start_transaction :: {:error, String.t()} | {:ok, String.t()}
+  @spec scan_product(String.t()) :: boolean()
   @doc """
-    Starts the transaction to add product into the cart or throw error if already exist
+    Scan product/ item one by one and return true/ false in response
 
     ## Examples
 
-      iex> EcartSupervisor.start_transaction()
-      {:ok, "Trasaction started"}
+      iex> EcartSystem.scan_product("VOUCHER")
+      true
 
-      iex> EcartSupervisor.start_transaction()
-      {:error, "Already exists. Please complete the transaction first."}
+      iex> EcartSystem.scan_product("TSHIRT")
+      true
+
+      iex> EcartSystem.scan_product("MUG")
+      true
+
+      iex> EcartSystem.scan_product("PEN")
+      false
 
   """
-  defdelegate start_transaction, to: EcartSupervisor
+  def scan_product(product_code) do
+    stored_products = Map.keys(fetch_prices())
 
-  @spec complete_transaction :: {:ok, String.t()} | {:error, String.t()}
+    product_code =
+      product_code
+      |> String.downcase()
+      |> String.to_atom()
+
+    if product_code in stored_products,
+      do: add_product(product_code),
+      else: false
+  end
+
+  @spec scan_products(String.t()) :: String.t()
   @doc """
-    Completed the transaction for the available items into cart
+    Scan all products/ items at once and returns total
 
     ## Examples
 
-      iex> EcartSupervisor.complete_transaction()
-      {:ok, "Transaction completed"}
+      iex> products = ["VOUCHER", "TSHIRT", "VOUCHER", "VOUCHER", "MUG", "TSHIRT", "TSHIRT"]
+      iex> EcartSystem.scan_products(products)
+      "74.5€"
 
-      iex> EcartSupervisor.complete_transaction()
-      {:error, "No child found"}
-
+      iex> products = ["TSHIRT", "TSHIRT", "TSHIRT", "VOUCHER", "TSHIRT"]
+      iex> EcartSystem.scan_products("TSHIRT")
+      "81.00€"
   """
-  defdelegate complete_transaction, to: EcartSupervisor
+  def scan_products(product_codes) when is_list(product_codes) do
+    stored_products = Map.keys(fetch_prices())
 
-  @spec scan_product(String.t()) :: :ok
+    price =
+      product_codes
+      |> Enum.reduce(%{}, fn product_code, products_qty ->
+        parsed_product_code = product_code |> String.downcase() |> String.to_atom()
+
+        if parsed_product_code in stored_products do
+          Map.update(products_qty, parsed_product_code, 1, &(&1 + 1))
+        else
+          products_qty
+        end
+      end)
+      |> calculate_total_amount()
+
+    "#{price}€"
+  end
+
+  def scan_products(_product_codes), do: "0€"
+
+  @spec add_total :: String.t()
   @doc """
-    Scan product/ item one by one and return :ok in response
-
-    ## Examples
-
-      iex> EcartManager.scan_product("VOUCHER")
-      :ok
-
-      iex> EcartManager.scan_product("TSHIRT")
-      :ok
-
-      iex> EcartManager.scan_product("MUG")
-      :ok
-
+  Calculate total of all scanned items from cart table
   """
-  defdelegate scan_product(product_code), to: EcartManager
+  def add_total do
+    "#{calculate_total_amount(cart())}€"
+  end
 
-  @spec calculate_total :: String.t()
-  @doc """
-    Calculate total price by adding offers and return total amount in EUR
+  defp calculate_total_amount(products) do
+    Enum.reduce(products, 0, fn {product, quantity}, total ->
+      product_cost = pricing_rule(product, quantity, fetch_prices())
+      product_cost + total
+    end)
+  end
 
-    Please note we are considering all amounts in currency EUR
-    ## Examples
-
-      iex> EcartManager.calculate_total()
-      "0€"
-
-  """
-  defdelegate calculate_total, to: EcartManager
+  defp pricing_rule(:voucher, quantity, price), do: round(quantity / 2) * price.voucher
+  defp pricing_rule(:tshirt, quantity, price) when quantity > 2, do: quantity * (price.tshirt - 1)
+  defp pricing_rule(product, quantity, price), do: quantity * price[product]
 end
